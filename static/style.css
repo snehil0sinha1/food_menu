@@ -1,0 +1,147 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(to right, #f9f9f9, #e0f7fa);
+    margin: 0;
+    padding: 0;
+}
+
+.wrapper {
+    max-width: 800px;
+    margin: 40px auto;
+    text-align: center;
+    background-color: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px;
+}
+
+th,
+td {
+    padding: 14px 20px;
+    border: 1px solid #ccc;
+    font-size: 1.1rem;
+}
+
+th {
+    background-color: #00796b;
+    color: white;
+}
+
+td {
+    background-color: #f1f1f1;
+}
+
+.refresh-btn {
+    background-color: #00796b;
+    color: white;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.refresh-btn:hover {
+    background-color: #004d40;
+}
+
+/* Day-wise background color for full rows */
+tbody tr:nth-child(1) td:first-child {
+    background-color: #ffebee;
+}
+
+/* Monday */
+tbody tr:nth-child(2) td:first-child {
+    background-color: #e8f5e9;
+}
+
+/* Tuesday */
+tbody tr:nth-child(3) td:first-child {
+    background-color: #e3f2fd;
+}
+
+/* Wednesday */
+tbody tr:nth-child(4) td:first-child {
+    background-color: #fff3e0;
+}
+
+/* Thursday */
+tbody tr:nth-child(5) td:first-child {
+    background-color: #ede7f6;
+}
+
+/* Friday */
+tbody tr:nth-child(6) td:first-child {
+    background-color: #f0f4c3;
+}
+
+/* Saturday */
+tbody tr:nth-child(7) td:first-child {
+    background-color: #e0f2f1;
+}
+
+/* Sunday */
+
+/* Lunch column */
+tbody td:nth-child(2) {
+    background-color: #fffde7 !important;
+    /* light yellow */
+    color: #795548;
+    font-weight: 600;
+}
+
+/* Dinner column */
+tbody td:nth-child(3) {
+    background-color: #e8eaf6 !important;
+    /* light indigo */
+    color: #1a237e;
+    font-weight: 600;
+}
+
+
+/* Make table container scrollable on smaller screens */
+.table-container {
+    overflow-x: auto;
+}
+
+/* Ensure button is full-width on mobile */
+@media (max-width: 600px) {
+    .wrapper {
+        padding: 20px;
+        margin: 20px;
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    table {
+        font-size: 0.9rem;
+        min-width: 600px;
+        /* force horizontal scroll if screen is narrower */
+    }
+
+    th,
+    td {
+        padding: 10px;
+    }
+
+    .refresh-btn {
+        width: 100%;
+        font-size: 1rem;
+        padding: 14px;
+    }
+}

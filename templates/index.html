@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Weekly Food Menu 🍴</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="wrapper">
+        <h1>🍛 Weekly Food Menu</h1>
+
+        <!-- ✅ Add this wrapper div for responsive scrolling -->
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>Lunch</th>
+                        <th>Dinner</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for day, meals in menu.items() %}
+                    <tr>
+                        <td>{{ day }}</td>
+                        <td>{{ meals.Lunch }}</td>
+                        <td>{{ meals.Dinner }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <form method="get" action="{{ url_for('refresh') }}">
+            <button class="refresh-btn" type="submit">🔁 Refresh Menu</button>
+        </form>
+    </div>
+</body>
+
+</html>
