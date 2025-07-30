@@ -1,67 +1,86 @@
 from flask import Flask, render_template, redirect, url_for
-import pandas as pd
 import random
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+from datetime import datetime
 
 app = Flask(__name__)
 
+# Setup Google Sheets connection
+scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+creds = ServiceAccountCredentials.from_json_keyfile_name('credentials.json', scope)
+client = gspread.authorize(creds)
 
+# Sheet setup
+sheet = client.open_by_key('17AHo4_PR8mz2RolXrOD-vzw4geI13xH7dujGaAcIeoE')
+read_ws = sheet.worksheet('MenuData')     # Sheet with food list
+write_ws = sheet.worksheet('WeeklyMenu')  # Sheet with weekly menus
 
-CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4Mia9DuUh7c3HFYjWxDorc59IcRKYcj-R5_4a7k7Koy6cc8AF83xFeWm2ifEOZp_K4HkSXBTHFccP/pub?gid=1243001482&single=true&output=csv"
+# Get current week number
+def get_current_week():
+    return str(datetime.now().isocalendar()[1])
 
+# Read food items from MenuData
 def get_food_items():
+    rows = read_ws.get_all_values()
+    return [row[1] for row in rows[1:] if len(row) > 1]  # Skip header and blank rows
+
+# Fetch existing menu from WeeklyMenu
+def get_menu():
     try:
-        print("Fetching CSV from:", CSV_URL)
-        df = pd.read_csv(CSV_URL)
-        print("Sheet preview:\n", df.head())
+        data = write_ws.get_all_records()
+        if not data:
+            return {}
 
-        # Inspect available columns
-        print("Columns found:", df.columns.tolist())
-
-        # Use column name if available
-        if 'Food Items' in df.columns:
-            return df['Food Items'].dropna().tolist()
-        else:
-            # Fallback to second column if unnamed
-            return df.iloc[:, 1].dropna().tolist()
-
+        menu = {}
+        for row in data:
+            day = row.get('Day')
+            lunch = row.get('Lunch')
+            dinner = row.get('Dinner')
+            if day:
+                menu[day] = {'Lunch': lunch, 'Dinner': dinner}
+        return menu
     except Exception as e:
-        print("Error fetching sheet:", e)
-        return ["Paneer", "Chana", "Soya", "Rajma"]
+        print(f"[ERROR] Failed to read menu: {e}")
+        return {}
 
-
-def generate_weekly_menu():
+# Generate and store weekly menu with unique food items
+def generate_menu():
+    days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
     food_items = get_food_items()
-    days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    current_week = get_current_week()
 
-    # Ensure we have at least 14 unique items
-    unique_items = list(set(food_items))
-    if len(unique_items) < 14:
-        return {day: {'Lunch': 'N/A', 'Dinner': 'N/A'} for day in days}
+    if len(food_items) < 14:
+        print("[ERROR] Not enough unique food items. At least 14 required.")
+        return
 
-    # Shuffle and pick 14 unique meals
-    random.shuffle(unique_items)
-    selected_items = unique_items[:14]
+    random.shuffle(food_items)
+    selected_items = food_items[:14]  # Pick 14 unique items
+    weekly_menu = []
 
-    # Split into lunch and dinner
-    lunch_items = selected_items[:7]
-    dinner_items = selected_items[7:]
-
-    weekly_menu = {}
     for i, day in enumerate(days):
-        weekly_menu[day] = {
-            'Lunch': lunch_items[i],
-            'Dinner': dinner_items[i]
-        }
+        lunch = selected_items[i]
+        dinner = selected_items[i + 7]
+        weekly_menu.append([current_week, day, lunch, dinner])
 
-    return weekly_menu
+    # Append only if this week's menu doesn't exist yet
+    data = write_ws.get_all_records(expected_headers=["Week", "Day", "Lunch", "Dinner"])
+    existing_weeks = {row['Week'] for row in data}
+
+    if current_week not in existing_weeks:
+        write_ws.append_rows(weekly_menu, value_input_option='USER_ENTERED')
 
 @app.route('/')
 def index():
-    menu = generate_weekly_menu()
-    return render_template("index.html", menu=menu)
+    menu = get_menu()
+    if not menu:
+        generate_menu()
+        menu = get_menu()
+    return render_template('index.html', menu=menu)
 
 @app.route('/refresh')
 def refresh():
+    generate_menu()
     return redirect(url_for('index'))
 
 if __name__ == '__main__':

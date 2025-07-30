@@ -11,7 +11,6 @@
     <div class="wrapper">
         <h1>🍛 Weekly Food Menu</h1>
 
-        <!-- ✅ Add this wrapper div for responsive scrolling -->
         <div class="table-container">
             <table>
                 <thead>
@@ -22,6 +21,7 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% if menu %}
                     {% for day, meals in menu.items() %}
                     <tr>
                         <td>{{ day }}</td>
@@ -29,6 +29,11 @@
                         <td>{{ meals.Dinner }}</td>
                     </tr>
                     {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="3" style="text-align:center;">No menu data available.</td>
+                    </tr>
+                    {% endif %}
                 </tbody>
             </table>
         </div>
